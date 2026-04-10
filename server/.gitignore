@@ -1,0 +1,4 @@
+.scripts/
+.deno-cache/
+data/
+compiled/

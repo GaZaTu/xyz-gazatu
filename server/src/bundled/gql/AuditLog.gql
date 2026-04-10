@@ -1,0 +1,18 @@
+query ($args: AuditLogEntryListConnectionArgs) {
+  auditLogEntryListConnection(args: $args) {
+    slice {
+      srcTable
+      operation
+      timestamp
+      newValues
+      oldValues
+      description
+      user {
+        id
+        username
+      }
+    }
+    pageIndex
+    pageCount
+  }
+}

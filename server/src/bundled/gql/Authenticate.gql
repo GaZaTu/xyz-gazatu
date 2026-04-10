@@ -1,0 +1,12 @@
+query ($username: String!, $password: String!) {
+  userAuthenticate(username: $username, password: $password) {
+    token
+    user {
+      id
+      username
+      roles {
+        name
+      }
+    }
+  }
+}

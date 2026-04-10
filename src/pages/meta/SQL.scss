@@ -1,0 +1,62 @@
+.sql-runner.off-canvas {
+  .sidebar {
+    height: 100vh;
+    overflow-x: scroll;
+    padding: 0.25rem;
+    background: var(--appheader-bg);
+  }
+}
+
+.sql-runner {
+  @media (min-width: 1920px) {
+    .sidebar {
+      max-height: 21rem;
+    }
+
+    &.off-canvas .off-canvas-sidebar {
+      position: absolute;
+    }
+  }
+
+  .sidebar {
+    .nav>a {
+      text-decoration: none;
+      padding: 0.25rem;
+      color: var(--body-fg);
+      // border: var(--border-width-md) solid gray;
+      // border-radius: var(--control-border-radius);
+      background: var(--body-bg);
+      margin-top: 10px;
+
+      &:hover {
+        background: var(--body-bg-monochrome);
+      }
+
+      &.active {
+        border-bottom: 1px solid var(--primary);
+      }
+    }
+  }
+
+  .input-group .title-addon {
+    border: unset;
+    box-shadow: unset;
+    padding-right: 0;
+    padding-top: 0;
+
+    &:not(:last-child) {
+      margin-right: 5px;
+    }
+  }
+}
+
+.table-container>.table-toolbar {
+  /* .container */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: unset;
+  padding-right: unset;
+  width: 100%;
+  /* .container.grid-xl */
+  max-width: calc((var(--layout-spacing-md) * 2) + var(--size-xl));
+}

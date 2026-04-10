@@ -1,0 +1,39 @@
+{
+  "short_name": "gazatu.xyz",
+  "name": "gazatu.xyz",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "16x16"
+    },
+    {
+      "src": "static/bee.min.svg",
+      "type": "image/svg+xml",
+      "sizes": "24x24 32x32 48x48 64x64 72x72 96x96 128x128 256x256 512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "static/bee.maskable.min.svg",
+      "type": "image/svg+xml",
+      "sizes": "24x24 32x32 48x48 64x64 72x72 96x96 128x128 256x256 512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#8a2be2",
+  "background_color": "#333333",
+  "orientation": "any",
+  "categories": ["utilities"],
+  "shortcuts" : [
+    {
+      "name": "Blog",
+      "url": "/blog/gallery"
+    },
+    {
+      "name": "Trading Chart",
+      "url": "/test/chart?fullscreen=true"
+    }
+  ]
+}

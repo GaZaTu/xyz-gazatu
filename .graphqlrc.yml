@@ -1,0 +1,2 @@
+schema: "src/lib/schema.gql"
+documents: "src/pages/**/*.{gql,ts,tsx}"

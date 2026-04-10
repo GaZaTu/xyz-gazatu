@@ -1,0 +1,11 @@
+query {
+  userList {
+    id
+    username
+    createdAt
+    roles {
+      id
+      name
+    }
+  }
+}

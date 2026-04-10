@@ -1,0 +1,465 @@
+type Query {
+  """public"""
+  findBlogEntry(id: String!): BlogEntry
+
+  """public"""
+  listBlogEntries(args: ListBlogEntriesArgs): BlogEntryListConnection!
+
+  """public"""
+  serverConfig: ServerConfig!
+
+  """requires: admin"""
+  serverLoad: [ServerLoadResultObject!]!
+
+  """requires: admin"""
+  listAuditLog(args: ListAuditLogArgs): AuditLogListConnection!
+
+  """public"""
+  findTriviaCategory(id: String!): TriviaCategory
+
+  """public"""
+  listTriviaCategories(args: ListTriviaCategoriesArgs): TriviaCategoryListConnection!
+
+  """public"""
+  findTriviaQuestion(id: String!): TriviaQuestion
+
+  """public"""
+  listTriviaQuestions(args: ListTriviaQuestionsArgs): TriviaQuestionListConnection!
+
+  """public"""
+  findTriviaReport(id: String!): TriviaReport
+
+  """public"""
+  listTriviaReports(args: ListTriviaReportsArgs): TriviaReportListConnection!
+
+  """public"""
+  getTriviaCounts: TriviaCounts!
+
+  """public"""
+  listUserRoles: [UserRole!]!
+
+  """requires: admin or current_user"""
+  findUser(id: String): User
+
+  """requires: admin"""
+  listUsers(args: ListUsersArgs): UserListConnection!
+
+  """requires: admin or current_user"""
+  listPasskeys(userId: String!): [UserPasskey!]!
+
+  """requires: admin"""
+  listPasswordResetRequests: [UserPasswordResetRequest!]!
+}
+
+type Mutation {
+  """requires: admin"""
+  saveBlogEntry(input: BlogEntryInput!): BlogEntry!
+
+  """requires: admin"""
+  removeBlogEntries(ids: [String!]!): Void
+
+  """requires: sql/reader"""
+  sqlQuery(sql: String!): SQLQueryResult!
+
+  """public"""
+  saveTriviaCategory(input: TriviaCategoryInput!): TriviaCategory!
+
+  """requires: trivia/admin"""
+  verifyTriviaCategories(ids: [String!]!): Void
+
+  """requires: trivia/admin"""
+  removeTriviaCategories(ids: [String!]!): Void
+
+  """public"""
+  saveTriviaQuestion(input: TriviaQuestionInput!): TriviaQuestion!
+
+  """requires: trivia/admin"""
+  verifyTriviaQuestions(ids: [String!]!): Void
+
+  """requires: trivia/admin"""
+  removeTriviaQuestions(ids: [String!]!): Void
+
+  """public"""
+  saveTriviaReport(input: TriviaReportInput!): TriviaReport!
+
+  """requires: trivia/admin"""
+  removeTriviaReports(ids: [String!]!): Void
+
+  """public"""
+  createUser(username: String!, password: String!): User!
+
+  """requires: admin or current_user"""
+  saveUser(input: UserInput!): User!
+
+  """requires: admin or current_user"""
+  removeUsers(ids: [String!]!): Void
+
+  """public"""
+  authenticate(username: String!, password: String!): UnionOf_AuthenticationResult_PasskeyAuthentication!
+
+  """public"""
+  authenticateWithPasskey(userId: String!, response: String!): AuthenticationResult!
+
+  """public"""
+  beginPasskeyRegistration: String!
+
+  """public"""
+  finishPasskeyRegistration(passkeyName: String!, response: String!): Void
+
+  """requires: admin or current_user"""
+  removePasskeys(ids: [String!]!): Void
+
+  """public"""
+  updatePassword(userId: String!, password: String!): Void
+
+  """public"""
+  requestPasswordReset(username: String!, message: String): String!
+
+  """public"""
+  updatePasswordByResetRequest(requestId: String!, password: String!): Void
+
+  """public"""
+  savePushSubscription(input: UserPushSubscriptionInput!): UserPushSubscription!
+
+  """requires: admin or current_user"""
+  removePushSubscriptions(ids: [String!]!): Void
+
+  """requires: admin or current_user"""
+  testPushSubscriptions(ids: [String!]!): Void
+}
+
+type BlogEntry {
+  id: String!
+  shortid: String!
+  story: String!
+  title: String!
+  message: String
+  mediaType: String!
+  mediaInfo: String
+  previewAspectRatio: Float!
+  createdAt: String!
+
+  """public"""
+  mediaUrl: String!
+
+  """public"""
+  previewUrl: String!
+}
+
+type BlogEntryListConnection {
+  slice: [BlogEntry!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+input ListBlogEntriesArgs {
+  window: Window
+  search: String
+  sorting: Sorting
+}
+
+input Window {
+  offset: Float! = 0
+  limit: Float! = 25
+}
+
+input Sorting {
+  col: String!
+  dir: SortDirection!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+input BlogEntryInput {
+  id: String
+  shortid: String
+  story: String!
+  title: String!
+  message: String
+  previewFile: File
+  mediaFile: File!
+  mediaType: String
+  mediaInfo: String
+  previewAspectRatio: Float
+}
+
+scalar File
+
+scalar Void
+
+type ServerConfig {
+  emailsEnabled: Boolean!
+  webpushPublicKey: String!
+}
+
+type ServerLoadResultObject {
+  timestamp: String!
+  requestsPerMinute: Float!
+  averageResponseTimeInMs: Float!
+  averageSystemLoad: Float!
+  totalMemoryInGB: Float!
+  averageFreeMemoryInGB: Float!
+  averageUsedMemoryInGB: Float!
+}
+
+type AuditLogListConnection {
+  slice: [AuditLog!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+type AuditLog {
+  id: String!
+  srcTable: String!
+  srcRowid: Unknown
+  operation: String!
+  timestamp: String!
+  newValues: String!
+  oldValues: String!
+  description: String
+  userId: String
+
+  """public"""
+  user: User
+}
+
+scalar Unknown
+
+type User {
+  id: String!
+  username: String!
+  activated: Boolean!
+  createdAt: String!
+
+  """public"""
+  roles: [UserRole!]!
+
+  """public"""
+  passkeys: [UserPasskey!]!
+
+  """public"""
+  pushSubscriptions: [UserPushSubscription!]!
+}
+
+type UserRole {
+  id: String!
+  name: String!
+  description: String
+}
+
+input ListAuditLogArgs {
+  window: Window
+  srcTable: String
+  srcRowid: Unknown
+}
+
+type SQLQueryResult {
+  error: String
+  dataAsJson: String
+}
+
+type TriviaCategory {
+  id: String!
+  name: String!
+  description: String
+  submitter: String
+  verified: Boolean!
+  createdAt: String!
+
+  """public"""
+  questionsCount: Float!
+}
+
+type TriviaCategoryListConnection {
+  slice: [TriviaCategory!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+input ListTriviaCategoriesArgs {
+  window: Window
+  search: String
+  sorting: Sorting
+  verified: Boolean
+}
+
+type TriviaQuestion {
+  id: String!
+  question: String!
+  answer: String!
+  hint1: String
+  hint2: String
+  submitter: String
+  verified: Boolean!
+  createdAt: String!
+
+  """public"""
+  categories: [TriviaCategory!]!
+
+  """requires: trivia/admin"""
+  reportsCount: Float!
+
+  """requires: trivia/admin"""
+  reports: [TriviaReport!]!
+}
+
+type TriviaQuestionListConnection {
+  slice: [TriviaQuestion!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+input ListTriviaQuestionsArgs {
+  window: Window
+  search: String
+  sorting: Sorting
+  verified: Boolean
+  shuffled: Boolean
+  includeCategories: [String!]
+  excludeCategories: [String!]
+  includeSubmitters: [String!]
+  excludeSubmitters: [String!]
+  categoryId: String
+}
+
+type TriviaReport {
+  id: String!
+  questionId: String!
+  message: String!
+  submitter: String!
+  createdAt: String!
+
+  """public"""
+  question: TriviaQuestion
+}
+
+type TriviaReportListConnection {
+  slice: [TriviaReport!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+input ListTriviaReportsArgs {
+  window: Window
+  search: String
+  sorting: Sorting
+  questionId: String
+}
+
+type TriviaCounts {
+  categories: Float!
+  categoriesNotVerified: Float!
+  questions: Float!
+  questionsNotVerified: Float!
+  reports: Float!
+}
+
+input TriviaCategoryInput {
+  id: String
+  name: String!
+  description: String
+  submitter: String
+}
+
+input TriviaQuestionInput {
+  id: String
+  question: String!
+  answer: String!
+  hint1: String
+  hint2: String
+  submitter: String
+
+  """public"""
+  categories: [TriviaCategoryInput!]!
+}
+
+input TriviaReportInput {
+  id: String
+  questionId: String!
+  message: String!
+  submitter: String!
+}
+
+type UserListConnection {
+  slice: [User!]!
+  pageIndex: Float!
+  pageCount: Float!
+}
+
+input ListUsersArgs {
+  window: Window
+  search: String
+  sorting: Sorting
+}
+
+type UserPasskey {
+  id: String!
+  userId: String!
+  name: String!
+  transports: String
+  counter: Float!
+  backedUp: Boolean!
+  deviceType: String!
+  createdAt: String!
+
+  """public"""
+  user: User
+}
+
+type UserPasswordResetRequest {
+  id: String!
+  userId: String!
+  message: String
+  createdAt: String!
+
+  """public"""
+  user: User
+}
+
+input UserInput {
+  id: String
+  username: String!
+  activated: Boolean
+
+  """public"""
+  roles: [UserRoleInput!]
+}
+
+input UserRoleInput {
+  id: String
+  name: String!
+  description: String
+}
+
+union UnionOf_AuthenticationResult_PasskeyAuthentication = AuthenticationResult | PasskeyAuthentication
+
+type AuthenticationResult {
+  user: User!
+  token: String!
+}
+
+type PasskeyAuthentication {
+  userId: String!
+  options: String!
+}
+
+type UserPushSubscription {
+  id: String!
+  userId: String!
+  device: String!
+  data: String!
+  createdAt: String!
+
+  """public"""
+  user: User
+}
+
+input UserPushSubscriptionInput {
+  id: String
+  userId: String!
+  device: String!
+  data: String!
+}
