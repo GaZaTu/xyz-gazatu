@@ -4,6 +4,7 @@ import { Button } from "@gazatu/solid-spectre/ui/Button"
 import { Chip } from "@gazatu/solid-spectre/ui/Chip"
 import { Column } from "@gazatu/solid-spectre/ui/Column"
 import { Icon } from "@gazatu/solid-spectre/ui/Icon"
+import { ModalPortal } from "@gazatu/solid-spectre/ui/Modal.Portal"
 import { createGlobalProgressStateEffect } from "@gazatu/solid-spectre/ui/Progress.Global"
 import { Section } from "@gazatu/solid-spectre/ui/Section"
 import { Table } from "@gazatu/solid-spectre/ui/Table"
@@ -15,7 +16,6 @@ import { Component, createEffect, createMemo, For } from "solid-js"
 import fetchGraphQL, { createGraphQLResource, gql } from "../../lib/fetchGraphQL"
 import { Mutation, Query, User, UserRole } from "../../lib/schema.gql"
 import { createAuthCheck } from "../../store/auth"
-import { ModalPortal } from "@gazatu/solid-spectre/ui/Modal.Portal"
 
 const UserListView: Component = () => {
   const navigate = useNavigate()

@@ -1,5 +1,4 @@
 import { validator } from "@felte/validator-superstruct"
-import { A } from "@gazatu/solid-spectre/ui/A"
 import { Button } from "@gazatu/solid-spectre/ui/Button"
 import { Checkbox } from "@gazatu/solid-spectre/ui/Checkbox"
 import { Column } from "@gazatu/solid-spectre/ui/Column"
@@ -12,13 +11,15 @@ import { tooltip } from "@gazatu/solid-spectre/util/tooltip"
 import { useBreakpoints } from "@gazatu/solid-spectre/util/useBreakpoints"
 import * as webauthn from "@simplewebauthn/browser"
 import { useNavigate } from "@solidjs/router"
-import { Component, createMemo, createSignal, Show } from "solid-js"
+import { Component, createEffect, createMemo, createSignal, Show } from "solid-js"
 import { isServer } from "solid-js/web"
 import { literal, refine, size, string, type } from "superstruct"
+import { createHideAppHeaderEntriesEffect } from "../AppHeader"
+import { defaultFetchInfo } from "../lib/fetchFromApi"
 import fetchGraphQL, { gql } from "../lib/fetchGraphQL"
 import { Mutation, PasskeyAuthentication } from "../lib/schema.gql"
 import superstructIsRequired from "../lib/superstructIsRequired"
-import { setStoredAuth } from "../store/auth"
+import { createAuthCheck, setStoredAuth, storedAuth } from "../store/auth"
 
 const AuthenticateSchema = type({
   username: size(string(), 6, 256),
@@ -106,12 +107,25 @@ const runPasskeyAuthentication = async (params: PasskeyAuthentication) => {
   })
 }
 
-const LoginForm: Component<{ isRegister?: boolean }> = props => {
+const doOIDCNavigation = () => {
+  const url = new URL(location.href)
+  const interaction = url.searchParams.get("oidc-interaction")
+  if (interaction) {
+    const targetUrl = new URL(`${defaultFetchInfo()}/oidc/interaction/${interaction}/login`)
+    targetUrl.searchParams.set("auth-token", storedAuth()!.token)
+    location.href = String(targetUrl)
+    return true
+  }
+
+  return false
+}
+
+const LoginForm: Component<{ isRegistration?: boolean }> = props => {
   const navigate = useNavigate()
 
   const [isSubmitting, setSubmitting] = createSignal(false)
 
-  const formSchema = props.isRegister ? RegisterUserSchema : AuthenticateSchema
+  const formSchema = props.isRegistration ? RegisterUserSchema : AuthenticateSchema
   const form = Form.createContext<Record<string, unknown>>({
     extend: validator<any>({ struct: formSchema }),
     isRequired: superstructIsRequired.bind(undefined, formSchema),
@@ -120,25 +134,30 @@ const LoginForm: Component<{ isRegister?: boolean }> = props => {
       setSubmitting(true)
       try {
         const res = await fetchGraphQL<Mutation>({
-          query: props.isRegister ? gqlRegisterUser : gqlAuthenticate,
+          query: props.isRegistration ? gqlRegisterUser : gqlAuthenticate,
           variables: { ...input },
         })
 
-        const result = props.isRegister ? res.createUser : res.authenticate
+        const result = props.isRegistration ? res.createUser : res.authenticate
         switch (result.__typename) {
           case "AuthenticationResult":
             setStoredAuth(result)
-            navigate("/")
-            return "Authenticated"
+            break
           case "PasskeyAuthentication":
             setStoredAuth(await runPasskeyAuthentication(result))
-            navigate("/")
-            return "Authenticated"
+            break
           case "User":
             return "Registration complete (an admin will verify you shortly(tm))"
           default:
             throw new Error()
         }
+
+        if (doOIDCNavigation()) {
+          return ""
+        }
+
+        navigate("/")
+        return "Authenticated"
       } finally {
         setSubmitting(false)
       }
@@ -190,24 +209,21 @@ const LoginForm: Component<{ isRegister?: boolean }> = props => {
 
   return (
     <Form context={form}>
-      <h3>{props.isRegister ? "Register" : "Login"}</h3>
+      <h3>{props.isRegistration ? "Register" : `Login ${location.search.includes("oidc") ? "(OIDC)" : ""}`}</h3>
 
       <Form.Group label="Username">
         <Input type="text" name="username" />
       </Form.Group>
 
       <Form.Group label={(
-        <span {...tooltip("sent over TLS, hashed using argon2")}>
-          <span>Password </span>
-          {props.isRegister && (
-            <A href="https://github.com/GaZaTu/gazatu-api-graphql-sqlite/blob/0d1276d6419c92f6d04c47fe567bd99320c450fe/src/schema/misc/user.ts#L262" tabIndex={-1}>(Server)</A>
-          )}
+        <span {...tooltip("hashed using argon2")}>
+          <span>Password</span>
         </span>
       )} labelAsString="Password">
         <Input type="password" name="password" />
       </Form.Group>
 
-      <Show when={props.isRegister}>
+      <Show when={props.isRegistration}>
         <Form.Group label="Repeat Password">
           <Input type="password" name="password2" />
         </Form.Group>
@@ -221,10 +237,10 @@ const LoginForm: Component<{ isRegister?: boolean }> = props => {
 
       <Form.Group>
         <Button type="submit" color="primary" onclick={form.createSubmitHandler()} loading={loading()}>
-          <span>{props.isRegister ? "Register" : "Login"}</span>
+          <span>{props.isRegistration ? "Register" : "Login"}</span>
         </Button>
 
-        <Show when={!props.isRegister}>
+        <Show when={!props.isRegistration}>
           <Button.A onclick={handleForgotPassword}>Forgot password?</Button.A>
         </Show>
       </Form.Group>
@@ -233,6 +249,20 @@ const LoginForm: Component<{ isRegister?: boolean }> = props => {
 }
 
 const LoginView: Component = () => {
+  const navigate = useNavigate()
+
+  const isLoggedIn = createAuthCheck()
+  createEffect(() => {
+    if (isLoggedIn()) {
+      if (doOIDCNavigation()) {
+        return
+      }
+      navigate("/")
+    }
+  })
+
+  createHideAppHeaderEntriesEffect(true)
+
   const breakpoints = useBreakpoints()
 
   return (
@@ -245,7 +275,7 @@ const LoginView: Component = () => {
         <Divider label="OR" vertical={breakpoints.md} />
 
         <Column sm={12}>
-          <LoginForm isRegister />
+          <LoginForm isRegistration />
         </Column>
       </Column.Row>
     </Section>

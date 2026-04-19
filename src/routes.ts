@@ -75,6 +75,10 @@ const routes: RouteDefinition[] = [
     component: lazy(() => import("./pages/meta/PasswordResetRequestList")),
   },
   {
+    path: "/oidc-consent",
+    component: lazy(() => import("./pages/OIDCConsent")),
+  },
+  {
     path: "**",
     component: lazy(() => import("./pages/Http404")),
   },

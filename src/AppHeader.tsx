@@ -21,26 +21,40 @@ import { computedColorScheme, setColorScheme } from "@gazatu/solid-spectre/util/
 import { centerChildren } from "@gazatu/solid-spectre/util/position"
 import { tooltip } from "@gazatu/solid-spectre/util/tooltip"
 import debounce from "debounce"
-import { Component, Show, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
+import { Component, Show, createEffect, createMemo, createRenderEffect, createSignal, onCleanup } from "solid-js"
 import fetchGraphQL, { gql } from "./lib/fetchGraphQL"
 import { Query, TriviaCounts } from "./lib/schema.gql"
 import { createAuthCheck, storedAuth } from "./store/auth"
 
-const [showAppHeader, setShowAppHeader] = createSignal(true)
-const useShowAppHeaderEffect = (show: boolean) => {
-  createEffect(() => {
-    setShowAppHeader(show)
+const [hideAppHeader, setHideAppHeader] = createSignal(false)
+const createHideAppHeaderEffect = (hide: boolean) => {
+  createRenderEffect(() => {
+    setHideAppHeader(hide)
   })
 
   onCleanup(() => {
-    setShowAppHeader(true)
+    setHideAppHeader(false)
+  })
+}
+
+const [hideAppHeaderEntries, setHideAppHeaderEntries] = createSignal(false)
+const createHideAppHeaderEntriesEffect = (hide: boolean) => {
+  createRenderEffect(() => {
+    setHideAppHeaderEntries(hide)
+  })
+
+  onCleanup(() => {
+    setHideAppHeaderEntries(false)
   })
 }
 
 export {
-  setShowAppHeader,
-  showAppHeader,
-  useShowAppHeaderEffect,
+  hideAppHeader,
+  setHideAppHeader,
+  createHideAppHeaderEffect,
+  hideAppHeaderEntries,
+  setHideAppHeaderEntries,
+  createHideAppHeaderEntriesEffect,
 }
 
 const AppHeader: Component = () => {
@@ -120,7 +134,7 @@ const AppHeader: Component = () => {
   const [expanded, setExpanded] = createSignal(false)
 
   return (
-    <Navbar id="AppHeader" size="lg" filled style={{ display: !showAppHeader() ? "none" : "flex" }} responsive expanded={expanded()}>
+    <Navbar id="AppHeader" size="lg" filled style={{ display: hideAppHeader() ? "none" : "flex" }} responsive expanded={expanded()}>
       <GlobalProgress />
 
       <Section size="xl">
@@ -133,101 +147,105 @@ const AppHeader: Component = () => {
             <Navbar.Burger expanded={expanded()} onclick={() => setExpanded(v => !v)} aria-label="toggle navigation" />
           </Navbar.Brand>
 
-          <Navbar.Dropdown toggle={toggle => (
-            <span {...badge(triviaTodos())} {...toggle}>Trivia</span>
-          )} matchHref="/trivia">
-            <Menu style={{ "min-width": "12rem" }}>
-              <Menu.Item>
-                <A href="/trivia/questions/new" match="path">Submit Question</A>
-              </Menu.Item>
-              <Menu.Item>
-                <A href="/trivia/categories/new" match="path">Submit Category</A>
-              </Menu.Item>
-              <Divider />
-              <Menu.Item badge={createTriviaCountsMenuLabel("questions")}>
-                <A href="/trivia/questions" match="href">Questions</A>
-              </Menu.Item>
-              <Show when={isTriviaAdmin()}>
-                <Menu.Item badge={createTriviaCountsMenuLabel("questionsNotVerified")}>
-                  <A href="/trivia/questions" params={{ verified: false }} match="href">Questions (not verified)</A>
-                </Menu.Item>
-              </Show>
-              <Menu.Item badge={createTriviaCountsMenuLabel("categories")}>
-                <A href="/trivia/categories" match="href">Categories</A>
-              </Menu.Item>
-              <Show when={isTriviaAdmin()}>
-                <Menu.Item badge={createTriviaCountsMenuLabel("categoriesNotVerified")}>
-                  <A href="/trivia/categories" params={{ verified: false }} match="href">Categories (not verified)</A>
-                </Menu.Item>
-              </Show>
-              <Show when={isTriviaAdmin()}>
-                <Menu.Item badge={createTriviaCountsMenuLabel("reports")}>
-                  <A href="/trivia/reports" match="href">Reports</A>
-                </Menu.Item>
-              </Show>
-            </Menu>
-          </Navbar.Dropdown>
-
-          <Button.A href="/blog/gallery" match="prefix">Blog</Button.A>
-
-          <Show when={isLoggedIn()}>
-            <Button.A href="/trading/chart" match="path">TChart</Button.A>
-          </Show>
-
-          <Show when={isAdmin()}>
+          <Show when={!hideAppHeaderEntries()}>
             <Navbar.Dropdown toggle={toggle => (
-              <span {...toggle}>Meta</span>
-            )} matchHref="/meta">
+              <span {...badge(triviaTodos())} {...toggle}>Trivia</span>
+            )} matchHref="/trivia">
               <Menu style={{ "min-width": "12rem" }}>
                 <Menu.Item>
-                  <A href="/meta/users" match="path">Users</A>
+                  <A href="/trivia/questions/new" match="path">Submit Question</A>
                 </Menu.Item>
                 <Menu.Item>
-                  <A href="/meta/password-reset-requests" match="path">Password Reset Requests</A>
+                  <A href="/trivia/categories/new" match="path">Submit Category</A>
                 </Menu.Item>
-                <Menu.Item>
-                  <A href="/meta/audit-log" match="path">Audit Log</A>
+                <Divider />
+                <Menu.Item badge={createTriviaCountsMenuLabel("questions")}>
+                  <A href="/trivia/questions" match="href">Questions</A>
                 </Menu.Item>
-                <Menu.Item>
-                  <A href="/meta/server-load" match="path">Server Load</A>
+                <Show when={isTriviaAdmin()}>
+                  <Menu.Item badge={createTriviaCountsMenuLabel("questionsNotVerified")}>
+                    <A href="/trivia/questions" params={{ verified: false }} match="href">Questions (not verified)</A>
+                  </Menu.Item>
+                </Show>
+                <Menu.Item badge={createTriviaCountsMenuLabel("categories")}>
+                  <A href="/trivia/categories" match="href">Categories</A>
                 </Menu.Item>
-                <Show when={isSQLReader()}>
-                  <Menu.Item>
-                    <A href="/meta/sql" match="path">SQL Tool</A>
+                <Show when={isTriviaAdmin()}>
+                  <Menu.Item badge={createTriviaCountsMenuLabel("categoriesNotVerified")}>
+                    <A href="/trivia/categories" params={{ verified: false }} match="href">Categories (not verified)</A>
+                  </Menu.Item>
+                </Show>
+                <Show when={isTriviaAdmin()}>
+                  <Menu.Item badge={createTriviaCountsMenuLabel("reports")}>
+                    <A href="/trivia/reports" match="href">Reports</A>
                   </Menu.Item>
                 </Show>
               </Menu>
             </Navbar.Dropdown>
+
+            <Button.A href="/blog/gallery" match="prefix">Blog</Button.A>
+
+            <Show when={isLoggedIn()}>
+              <Button.A href="/trading/chart" match="path">TChart</Button.A>
+            </Show>
+
+            <Show when={isAdmin()}>
+              <Navbar.Dropdown toggle={toggle => (
+                <span {...toggle}>Meta</span>
+              )} matchHref="/meta">
+                <Menu style={{ "min-width": "12rem" }}>
+                  <Menu.Item>
+                    <A href="/meta/users" match="path">Users</A>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <A href="/meta/password-reset-requests" match="path">Password Reset Requests</A>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <A href="/meta/audit-log" match="path">Audit Log</A>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <A href="/meta/server-load" match="path">Server Load</A>
+                  </Menu.Item>
+                  <Show when={isSQLReader()}>
+                    <Menu.Item>
+                      <A href="/meta/sql" match="path">SQL Tool</A>
+                    </Menu.Item>
+                  </Show>
+                </Menu>
+              </Navbar.Dropdown>
+            </Show>
           </Show>
         </Navbar.Section>
 
         <Navbar.Section>
-          <Column.Row gaps="sm">
-            <Column class={`${centerChildren(true)}`}>
-              <Button.A href="http://github.com/GaZaTu/gazatu-website-graphql-solidjs-spectre" color="gray" action {...tooltip("open github", "bottom")}>
-                <Icon src={iconGithub} />
-              </Button.A>
-            </Column>
-
-            <Column class={`${centerChildren(true)}`}>
-              <CheckboxButton checked={computedColorScheme() === "dark"} onclick={() => setColorScheme((computedColorScheme() === "dark") ? "light" : "dark")} {...tooltip("toggle color scheme", "bottom")} color="gray" action circle={false}
-                ifTrue={<Icon src={iconSun} />}
-                ifFalse={<Icon src={iconMoon} />}
-              />
-            </Column>
-
-            <Column class={`${centerChildren(true)}`}>
-              <Show when={storedAuth()} fallback={
-                <Button.A href="/login" color="primary" action {...tooltip("login", "bottom")}>
-                  <Icon src={iconLogIn} />
+          <Show when={!hideAppHeaderEntries()}>
+            <Column.Row gaps="sm">
+              <Column class={`${centerChildren(true)}`}>
+                <Button.A href="http://github.com/GaZaTu/gazatu-website-graphql-solidjs-spectre" color="gray" action {...tooltip("open github", "bottom")}>
+                  <Icon src={iconGithub} />
                 </Button.A>
-              }>
-                <A href="/profile">
-                  <Avatar size="btn" initials={storedAuth()?.user?.username?.slice(0, 2)} {...tooltip("user profile", "bottom")} />
-                </A>
-              </Show>
-            </Column>
-          </Column.Row>
+              </Column>
+
+              <Column class={`${centerChildren(true)}`}>
+                <CheckboxButton checked={computedColorScheme() === "dark"} onclick={() => setColorScheme((computedColorScheme() === "dark") ? "light" : "dark")} {...tooltip("toggle color scheme", "bottom")} color="gray" action circle={false}
+                  ifTrue={<Icon src={iconSun} />}
+                  ifFalse={<Icon src={iconMoon} />}
+                />
+              </Column>
+
+              <Column class={`${centerChildren(true)}`}>
+                <Show when={storedAuth()} fallback={
+                  <Button.A href="/login" color="primary" action {...tooltip("login", "bottom")}>
+                    <Icon src={iconLogIn} />
+                  </Button.A>
+                }>
+                  <A href="/profile">
+                    <Avatar size="btn" initials={storedAuth()?.user?.username?.slice(0, 2)} {...tooltip("user profile", "bottom")} />
+                  </A>
+                </Show>
+              </Column>
+            </Column.Row>
+          </Show>
         </Navbar.Section>
       </Section>
     </Navbar>

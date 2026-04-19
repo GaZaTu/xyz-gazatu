@@ -14,8 +14,8 @@ Icon.registerProvider(FeatherIconProvider)
 AnchorContext.useLocation = useLocation as any
 AnchorContext.useNavigate = useNavigate
 
-// setDefaultFetchInfo("http://localhost:34666")
-setDefaultFetchInfo("https://api.gazatu.xyz")
+setDefaultFetchInfo("http://localhost:34666")
+// setDefaultFetchInfo("https://api.gazatu.xyz")
 setGraphqlEndpoint("/graphql")
 
 type Props = {

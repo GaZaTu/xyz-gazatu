@@ -1,14 +1,20 @@
 import { validator } from "@felte/validator-superstruct"
 import { iconCopy } from "@gazatu/solid-spectre/icons/iconCopy"
+import { iconKey } from "@gazatu/solid-spectre/icons/iconKey"
 import { iconLogOut } from "@gazatu/solid-spectre/icons/iconLogOut"
+import { iconRss } from "@gazatu/solid-spectre/icons/iconRss"
 import { iconSave } from "@gazatu/solid-spectre/icons/iconSave"
+import { iconSend } from "@gazatu/solid-spectre/icons/iconSend"
 import { iconUserX } from "@gazatu/solid-spectre/icons/iconUserX"
+import { iconX } from "@gazatu/solid-spectre/icons/iconX"
 import { Autocomplete } from "@gazatu/solid-spectre/ui/Autocomplete"
 import { Button } from "@gazatu/solid-spectre/ui/Button"
 import { Column } from "@gazatu/solid-spectre/ui/Column"
 import { Form } from "@gazatu/solid-spectre/ui/Form"
+import { FormGroup } from "@gazatu/solid-spectre/ui/Form.Group"
 import { Icon } from "@gazatu/solid-spectre/ui/Icon"
 import { Input } from "@gazatu/solid-spectre/ui/Input"
+import { Modal } from "@gazatu/solid-spectre/ui/Modal"
 import { ModalPortal } from "@gazatu/solid-spectre/ui/Modal.Portal"
 import { Navbar } from "@gazatu/solid-spectre/ui/Navbar"
 import { createGlobalProgressStateEffect } from "@gazatu/solid-spectre/ui/Progress.Global"
@@ -18,7 +24,7 @@ import { Toaster } from "@gazatu/solid-spectre/ui/Toaster"
 import * as webauthn from "@simplewebauthn/browser"
 import { Title } from "@solidjs/meta"
 import { useLocation, useNavigate } from "@solidjs/router"
-import { Component, createEffect, createMemo, createSignal, For, Show } from "solid-js"
+import { Component, createEffect, createMemo, createSignal, For, JSX, Show } from "solid-js"
 import { isServer } from "solid-js/web"
 import { array, size, string, type } from "superstruct"
 import fetchGraphQL, { createGraphQLResource, gql } from "../../lib/fetchGraphQL"
@@ -26,10 +32,26 @@ import { Mutation, Query, UserInput, UserPasskey, UserPushSubscription } from ".
 import superstructIsRequired from "../../lib/superstructIsRequired"
 import useIdFromParams from "../../lib/useIdFromParams"
 import { createAuthCheck, storedAuth } from "../../store/auth"
-import { iconKey } from "@gazatu/solid-spectre/icons/iconKey"
-import { iconRss } from "@gazatu/solid-spectre/icons/iconRss"
-import { iconX } from "@gazatu/solid-spectre/icons/iconX"
-import { iconSend } from "@gazatu/solid-spectre/icons/iconSend"
+
+const prompt = (message: JSX.Element) => {
+  return ModalPortal.push<string | null>(modal => {
+    const [value, setValue] = createSignal("")
+
+    return (
+      <Modal onclose={() => modal.resolve(null)} active style={{ "margin-bottom": "20rem" }}>
+        <Modal.Body>
+          <FormGroup label={message}>
+            <Input value={value()} onInput={e => setValue(e.currentTarget.value)} />
+          </FormGroup>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button color="primary" onclick={() => modal.resolve(value())}>OK</Button>
+          <Button color="link" onclick={() => modal.resolve(null)}>Cancel</Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  })
+}
 
 const UserSchema = type({
   username: size(string(), 6, 32),
@@ -161,7 +183,7 @@ const UserView: Component = () => {
         variables: { ids: [id()] },
       })
 
-      navigate("/logout")
+      navigate("/logout", { replace: true })
     })
   }
 
@@ -179,7 +201,7 @@ const UserView: Component = () => {
       const options = JSON.parse(beginPasskeyRegistration)
       const response = await webauthn.startRegistration(options)
 
-      const passkeyName = prompt("Passkey name")
+      const passkeyName = await prompt("Passkey name")
       if (!passkeyName) {
         throw new Error("cancelled")
       }
@@ -228,7 +250,7 @@ const UserView: Component = () => {
 
       const subscription = await registration.pushManager.subscribe()
 
-      const device = prompt("Device name")
+      const device = await prompt("Device name")
       if (!device) {
         throw new Error("cancelled")
       }
@@ -306,7 +328,7 @@ const UserView: Component = () => {
             </Column>
 
             <Column xxl="auto" offset="ml">
-              <Button.A href="/logout" color="warning">
+              <Button.A href="/logout" color="warning" replace>
                 <Icon src={iconLogOut} />
                 <span>Logout</span>
               </Button.A>

@@ -3,12 +3,13 @@ import "./index.scss"
 // js
 // import { __ssrLoadedModules } from "@gazatu/vite-ssg"
 // import type { EntryFileExports } from "@gazatu/vite-ssg/node"
-// import { ComponentProps } from "solid-js"
 import App from "./App"
 
-void (async () => {
-  await navigator.serviceWorker.register("/service-worker.js")
-})()
+if (navigator?.serviceWorker) {
+  void (async () => {
+    await navigator.serviceWorker.register("/service-worker.js")
+  })()
+}
 
 const ROOT_ELEMENT_ID = "root"
 
@@ -27,17 +28,16 @@ if (typeof window !== "undefined") {
 }
 
 // export const prerender: EntryFileExports["prerender"] = async context => {
-//   const head = [] as ComponentProps<typeof App>["head"]
-//   const main = () => <App url={context.route} head={head} />
+//   // const head = [] as ComponentProps<typeof App>["head"]
+//   const main = () => <App url={context.route} />
 
 //   const { renderToStringAsync, generateHydrationScript } = await import("solid-js/web")
-//   const { renderTags } = await import("@solidjs/meta")
 //   return {
 //     html: await renderToStringAsync(main),
 //     head: {
 //       elements: [
 //         generateHydrationScript(),
-//         renderTags(head ?? []),
+//         // renderTags(head ?? []),
 //       ],
 //     },
 //     preload: __ssrLoadedModules.slice(),

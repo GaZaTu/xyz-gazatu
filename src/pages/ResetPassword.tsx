@@ -82,7 +82,7 @@ const ResetPasswordView: Component = () => {
         <h3>Reset password</h3>
 
         <Form.Group label={(
-          <span {...tooltip("sent over TLS, hashed using argon2")}>
+          <span {...tooltip("hashed using argon2")}>
             <span>Password</span>
           </span>
         )} labelAsString="Password">

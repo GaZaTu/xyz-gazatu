@@ -6,7 +6,7 @@
     "start": "vite",
     "serve": "vite preview",
     "build": "vite build",
-    "build:ssg": "node --experimental-loader ./node_modules/@gazatu/vite-ssg/dist/esm-loader.mjs ./node_modules/.bin/vite-ssg build",
+    "build:ssg": "node --loader ./node_modules/@gazatu/vite-ssg/dist/esm-loader.mjs ./node_modules/.bin/vite-ssg build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

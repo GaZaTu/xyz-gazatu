@@ -1,8 +1,0 @@
-query {
-  serverLoad {
-    timestamp
-    requestsPerMinute
-    averageResponseTimeInMs
-    averageSystemLoad
-  }
-}
